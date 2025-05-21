@@ -31,7 +31,7 @@
 extern uint16_t cmdResponseLen;
 extern uint32_t address_idx_account;
 
-// test
+// test 1
 __Z_INLINE zxerr_t app_fill_address(address_index_t address_index) {
     check_app_canary();
     // Put data directly in the apdu buffer
