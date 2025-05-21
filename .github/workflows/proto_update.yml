@@ -1,0 +1,50 @@
+name: Proto Update
+
+on:
+  schedule:
+    - cron: '*/2 * * * *'  # Ejecuta cada 2 minutos
+  workflow_dispatch:  # Permite ejecutar manualmente
+
+jobs:
+  proto-update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+          pip install grpcio-tools
+
+      - name: Run make proto
+        run: make proto
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git add .
+          if git diff --cached --quiet; then
+            echo "changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create PR if changes exist
+        if: steps.changes.outputs.changes == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Update generated proto files"
+          title: "Update generated proto files"
+          body: "This PR updates the generated proto files."
+          branch: "proto-update-$(date +%s)"
+          delete-branch: true
+          draft: false
