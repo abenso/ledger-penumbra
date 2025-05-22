@@ -76,6 +76,6 @@ jobs:
           commit-message: "Update generated proto files"
           title: "Update generated proto files"
           body: "This PR updates the generated proto files."
-          branch: "proto-update-$(date +%s)"
+          branch: proto-update-${{ github.run_id }}
           delete-branch: true
           draft: false
