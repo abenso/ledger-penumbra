@@ -58,9 +58,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           PR_EXISTS=$(gh pr list --state open --search "Update generated proto files" --json number --jq 'length')
+          echo "PR_EXISTS=$PR_EXISTS"
           if [ "$PR_EXISTS" -gt 0 ]; then
+            echo "An open PR already exists."
             echo "pr_exists=true" >> $GITHUB_OUTPUT
+            exit 0
           else
+            echo "No open PR found."
             echo "pr_exists=false" >> $GITHUB_OUTPUT
           fi
 
