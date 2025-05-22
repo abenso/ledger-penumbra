@@ -3,7 +3,7 @@ name: Proto Update
 on:
   schedule:
     - cron: '*/2 * * * *'  # Ejecuta cada 2 minutos
-  workflow_dispatch:  # Permite ejecutar manualmente
+  workflow_dispatch:  # Permite ejecutar manualmente desde cualquier branch
 
 jobs:
   proto-update:
@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: recursive  # Clona los submodules
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -24,21 +26,46 @@ jobs:
           sudo apt-get install -y protobuf-compiler
           pip install grpcio-tools
 
+
+      - name: Install buf using Homebrew
+        run: |
+          # Instala buf usando Homebrew
+          curl -sSL "https://github.com/bufbuild/buf/releases/latest/download/buf-Linux-x86_64" -o buf && chmod +x buf && sudo mv buf /usr/local/bin/
+
+      - name: Check buf version
+        run: buf --version  # Verifica la versión de buf instalada
+
       - name: Run make proto
         run: make proto
 
-      - name: Check for changes
+      - name: Check for changes in proto
         id: changes
         run: |
-          git add .
-          if git diff --cached --quiet; then
+          git add proto/
+          if git diff --cached --quiet -- proto/; then
+            echo "No changes detected in proto/"
             echo "changes=false" >> $GITHUB_OUTPUT
+            exit 0
           else
+            echo "Changes detected in proto/:"
+            git diff --cached --stat -- proto/
             echo "changes=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Create PR if changes exist
-        if: steps.changes.outputs.changes == 'true'
+      - name: Check for existing PR
+        id: check-pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_EXISTS=$(gh pr list --state open --search "Update generated proto files" --json number --jq 'length')
+          if [ "$PR_EXISTS" -gt 0 ]; then
+            echo "pr_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "pr_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create PR if changes exist and no PR is open
+        if: steps.changes.outputs.changes == 'true' && steps.check-pr.outputs.pr_exists == 'false'
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
