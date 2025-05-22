@@ -39,7 +39,7 @@ enum LengthOp {
   // REQUIRE_32_BYTES is like NONE, but will fail if the input is not exactly 32 bytes (sha256 output)
   REQUIRE_32_BYTES = 7;
   // REQUIRE_64_BYTES is like NONE, but will fail if the input is not exactly 64 bytes (sha512 output)
-  REQUIRE_64_BYTES = 9;
+  REQUIRE_64_BYTES = 8;
 }
 
 /**
