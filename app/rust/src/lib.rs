@@ -19,10 +19,10 @@
 #![deny(unused_crate_dependencies)]
 
 extern crate no_std_compat as std;
+extern crate compiler_builtins;
 
 use ethnum as _;
 use poseidon377 as _;
-use compiler_builtins as _;
 
 pub(crate) mod address;
 mod bolos;
