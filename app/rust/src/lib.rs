@@ -16,7 +16,7 @@
 #![no_std]
 #![no_builtins]
 #![allow(dead_code)]
-#![deny(unused_crate_dependencies)]
+#![warn(unused_crate_dependencies)]
 
 extern crate no_std_compat as std;
 
